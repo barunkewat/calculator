@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculator with History</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .calculator-section, .history-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .calculator {
+            max-width: 350px;
+            margin: 0 auto;
+        }
+
+        .display {
+            width: 100%;
+            height: 80px;
+            font-size: 2rem;
+            text-align: right;
+            padding: 0 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        button {
+            height: 70px;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .number {
+            background: #ffffff;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+
+        .number:hover {
+            background: #f8f9fa;
+            border-color: #007bff;
+        }
+
+        .operator {
+            background: #007bff;
+            color: white;
+        }
+
+        .operator:hover {
+            background: #0056b3;
+        }
+
+        .equals {
+            background: #28a745;
+            color: white;
+        }
+
+        .equals:hover {
+            background: #1e7e34;
+        }
+
+        .clear {
+            background: #dc3545;
+            color: white;
+        }
+
+        .clear:hover {
+            background: #c82333;
+        }
+
+        .history-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 1.5rem;
+        }
+
+        .history-log {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            background: #f8f9fa;
+            padding: 15px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .calculation {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .result {
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: #999;
+        }
+
+        .clear-history {
+            width: 100%;
+            margin-top: 15px;
+            height: 40px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .clear-history:hover {
+            background: #5a6268;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="calculator-section">
+            <div class="calculator">
+                <div class="display" id="display">0</div>
+                <div class="buttons">
+                    <button class="clear" onclick="clearDisplay()">C</button>
+                    <button class="operator" onclick="appendToDisplay('/')">/</button>
+                    <button class="operator" onclick="appendToDisplay('*')">×</button>
+                    <button class="operator" onclick="deleteLast()">⌫</button>
+                    
+                    <button class="number" onclick="appendToDisplay('7')">7</button>
+                    <button class="number" onclick="appendToDisplay('8')">8</button>
+                    <button class="number" onclick="appendToDisplay('9')">9</button>
+                    <button class="operator" onclick="appendToDisplay('-')">-</button>
+                    
+                    <button class="number" onclick="appendToDisplay('4')">4</button>
+                    <button class="number" onclick="appendToDisplay('5')">5</button>
+                    <button class="number" onclick="appendToDisplay('6')">6</button>
+                    <button class="operator" onclick="appendToDisplay('+')">+</button>
+                    
+                    <button class="number" onclick="appendToDisplay('1')">1</button>
+                    <button class="number" onclick="appendToDisplay('2')">2</button>
+                    <button class="number" onclick="appendToDisplay('3')">3</button>
+                    <button class="equals" onclick="calculate()" rowspan="2">=</button>
+                    
+                    <button class="number" onclick="appendToDisplay('0')" style="grid-column: span 2;">0</button>
+                    <button class="number" onclick="appendToDisplay('.')">.</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="history-section">
+            <h2>Calculation History</h2>
+            <div class="history-log" id="historyLog">
+                <div class="empty-history">No calculations yet</div>
+            </div>
+            <button class="clear-history" onclick="clearHistory()">Clear History</button>
+        </div>
+    </div>
+
+    <script>
+        let display = document.getElementById('display');
+        let currentInput = '0';
+        let shouldResetDisplay = false;
+        let calculationHistory = [];
+
+        // Load history from memory on page load
+        window.onload = function() {
+            loadHistory();
+            updateHistoryDisplay();
+        };
+
+        function appendToDisplay(value) {
+            if (shouldResetDisplay) {
+                currentInput = '';
+                shouldResetDisplay = false;
+            }
+            
+            if (currentInput === '0' && value !== '.') {
+                currentInput = value;
+            } else {
+                currentInput += value;
+            }
+            
+            display.textContent = currentInput;
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            display.textContent = currentInput;
+        }
+
+        function deleteLast() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            display.textContent = currentInput;
+        }
+
+        function calculate() {
+            try {
+                // Replace display multiplication symbol with JavaScript operator
+                let expression = currentInput.replace(/×/g, '*');
+                
+                // Evaluate the expression
+                let result = eval(expression);
+                
+                // Handle division by zero and other edge cases
+                if (!isFinite(result)) {
+                    throw new Error('Invalid calculation');
+                }
+                
+                // Add to history
+                addToHistory(currentInput, result);
+                
+                // Update display
+                display.textContent = result;
+                currentInput = result.toString();
+                shouldResetDisplay = true;
+                
+            } catch (error) {
+                display.textContent = 'Error';
+                currentInput = '0';
+                shouldResetDisplay = true;
+            }
+        }
+
+        function addToHistory(calculation, result) {
+            const timestamp = new Date().toLocaleString();
+            const historyItem = {
+                calculation: calculation,
+                result: result,
+                timestamp: timestamp
+            };
+            
+            calculationHistory.unshift(historyItem); // Add to beginning of array
+            
+            // Keep only last 50 calculations to avoid memory issues
+            if (calculationHistory.length > 50) {
+                calculationHistory = calculationHistory.slice(0, 50);
+            }
+            
+            saveHistory();
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyLog = document.getElementById('historyLog');
+            
+            if (calculationHistory.length === 0) {
+                historyLog.innerHTML = '<div class="empty-history">No calculations yet</div>';
+                return;
+            }
+            
+            let historyHTML = '';
+            calculationHistory.forEach(item => {
+                historyHTML += `
+                    <div class="history-item">
+                        <div>
+                            <div class="calculation">${item.calculation} =</div>
+                            <div class="timestamp">${item.timestamp}</div>
+                        </div>
+                        <div class="result">${item.result}</div>
+                    </div>
+                `;
+            });
+            
+            historyLog.innerHTML = historyHTML;
+        }
+
+        function clearHistory() {
+            calculationHistory = [];
+            saveHistory();
+            updateHistoryDisplay();
+        }
+
+        // Save history to memory (using a simple variable since localStorage isn't available)
+        function saveHistory() {
+            // In a real application, this would save to a database or localStorage
+            // For this demo, we're just keeping it in memory during the session
+        }
+
+        function loadHistory() {
+            // In a real application, this would load from a database or localStorage
+            // For this demo, history starts empty each session
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            
+            if (key >= '0' && key <= '9') {
+                appendToDisplay(key);
+            } else if (key === '.') {
+                appendToDisplay('.');
+            } else if (key === '+') {
+                appendToDisplay('+');
+            } else if (key === '-') {
+                appendToDisplay('-');
+            } else if (key === '*') {
+                appendToDisplay('*');
+            } else if (key === '/') {
+                event.preventDefault(); // Prevent browser search
+                appendToDisplay('/');
+            } else if (key === 'Enter' || key === '=') {
+                calculate();
+            } else if (key === 'Escape' || key === 'c' || key === 'C') {
+                clearDisplay();
+            } else if (key === 'Backspace') {
+                deleteLast();
+            }
+        });
+    </script>
+</body>
+</html>
